@@ -16,11 +16,12 @@ import {
     ConnectDragSource,
 } from "react-dnd";
 import { ItemTypes } from "../constants";
+import { CardElem } from "../models/cardElem";
 import { CardAction } from "../actionCreators/CardAction";
 
 interface ICardProps {
     index: number;
-    text: string;
+    card: CardElem;
     cardAction: CardAction;
 }
 
@@ -38,12 +39,21 @@ class Card extends React.Component<ICardProps &
     constructor(props) {
         super(props);
     }
-    render() {
-        const {text, connectDragSource, connectDropTarget, isDragging} = this.props;
-        const opacity = isDragging ? 0 : 1;
 
-        return connectDragSource(connectDropTarget(<div>
-            {text}
+    shouldComponentUpdate(nextProps: ICardProps & ICardSourceProps, nextState: any) {
+        const card = this.props.card;
+        const nextCard = nextProps.card;
+
+        return card.equals(nextCard) === false ||
+            this.props.isDragging !== nextProps.isDragging;
+    }
+
+    render() {
+        const {card, connectDragSource, connectDropTarget, isDragging} = this.props;
+        const opacity = isDragging ? "no-opacity" : "opacity";
+
+        return connectDragSource(connectDropTarget(<div className={`card ${opacity}`} >
+            {card.getText()}
         </div>));
     }
 }
@@ -51,6 +61,7 @@ class Card extends React.Component<ICardProps &
 const cardSource: DragSourceSpec<ICardProps> = {
     beginDrag(props: ICardProps) {
         return {
+            id: props.card.getId(),
             index: props.index
         };
     }
@@ -101,24 +112,20 @@ const cardTarget: DropTargetSpec<ICardProps> = {
         // to avoid expensive index searches.
         (monitor.getItem() as any).index = hoverIndex;
     }
-}
+};
 
-const dragSourceCollect = (
-    connect: DragSourceConnector,
+const dropTargetCollect = (connect: DropTargetConnector): ICardTargetProps => ({
+    connectDropTarget: connect.dropTarget()
+});
+
+
+const dragSourceCollect = (connect: DragSourceConnector,
     monitor: DragSourceMonitor): ICardSourceProps => {
     return {
         connectDragSource: connect.dragSource(),
-        isDragging: monitor.isDragging(),
+        isDragging: monitor.isDragging()
     };
-}
-
-const dropTargetCollect = (
-    connect: DropTargetConnector,
-    monitor: DropTargetMonitor): ICardTargetProps => (
-        {
-            connectDropTarget: connect.dropTarget(),
-        }
-    );
+};
 
 export const CardTargetSource: React.ComponentClass<ICardProps> = flow(
     DropTarget(ItemTypes.CARD, cardTarget, dropTargetCollect),

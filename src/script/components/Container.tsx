@@ -1,14 +1,15 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { List, Range } from "immutable";
+import { CardTargetSource } from "./Card";
+import { CardElem } from "../models/cardElem";
 import { CardAction } from "../actionCreators/cardAction";
 import { DragDropContext } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
 
 interface IContainerProps {
-    hand: List<string>;
+    cards: List<CardElem>;
     cardAction: CardAction;
-    cardEvent: Bacon.Property<List<string>, List<string>>;
 }
 
 class Container extends React.Component<IContainerProps, any> {
@@ -17,15 +18,13 @@ class Container extends React.Component<IContainerProps, any> {
     }
 
     render() {
-        <div className="container">
-        {
-            this.props.hand.map((card, i) =>
-                
-            );
-        }
-
-        return <div className="board">
-            {squares}
+        return <div className="container">
+            {this.props.cards.map((card, idx) =>
+                <CardTargetSource key={card.getId()}
+                    index={idx}
+                    card={card}
+                    cardAction={this.props.cardAction} />
+            )}
         </div>;
     }
 }

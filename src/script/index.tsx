@@ -6,20 +6,26 @@ import * as ReactDOM from "react-dom";
 import { List } from "immutable";
 
 import Dispatcher from "./actionCreators/dispatcher";
+import { CardElem } from "./models/cardElem";
 import { CardAction } from "./actionCreators/CardAction";
-import { Container } from "./components/Container";
+import Container from "./components/Container";
 
 const dispatcher = new Dispatcher();
-const firstPosition: [number, number] = [4, 7];
+const firstHand = List.of(
+    new CardElem(1, "White a cool JS library"),
+    new CardElem(2, "Make it generic enough"),
+    new CardElem(3, "Write README"),
+    new CardElem(4, "Create some examples"),
+    new CardElem(5, "???")
+);
 
-const gameAction: GameAction = new GameAction(dispatcher, firstPosition);
-const gameEvent: Bacon.Property<Position, Position> = gameAction.createProperty();
+const cardAction = new CardAction(dispatcher, firstHand);
+const cardEvent: Bacon.Property<List<CardElem>, List<CardElem>> = cardAction.createProperty();
 
-gameEvent.onValue((position: Position) => {
-    ReactDOM.render(<Board
-        knightPosition={position}
-        gameAction={gameAction}
-        gameEvent={gameEvent} />,
+cardEvent.onValue((cards: List<CardElem>) => {
+    ReactDOM.render(<Container
+        cards={cards}
+        cardAction={cardAction} />,
         document.getElementById("content")
     );
 });
